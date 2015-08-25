@@ -1,0 +1,20 @@
+TODO lots of work
+
+class Container<T>
+{
+	T m_content;
+}
+
+T min<T>(T lhs, T rhs)
+{
+  return lhs < rhs ? lhs : rhs;
+}
+
+TODO lots of stuff
+  - How can it be guaranteed that Container<T> sees everything it needs to use T?
+    For example, suppose it needs the global operator+(T t, T t);
+    - By implicitly inserting 'use T.parent_module;' in beginning of generated Container<T>?
+  - the nature of metacode inside Container<T> (see metafunctions.txt)
+  - generic functions and overload resolution
+  - how and when code is generated
+  - how code between generated types is shared if at all

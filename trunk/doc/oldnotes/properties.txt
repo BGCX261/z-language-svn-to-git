@@ -1,0 +1,45 @@
+TODO figure out syntax to create functions out of properties
+
+Properties are used like in C#, but the syntax used to define them is
+different. Properties of type T are normal functions that either take
+a T as an argument (setters) or return a T.
+
+class Box
+{
+  property width(float f); // Define a setter 
+  property pure float width(); // Define a getter
+  // ...
+}
+
+float g(ref float x)
+{
+  x *= 2.0f;
+}
+
+f()
+{
+  Box b;
+  b.width = 1.0f; // generate b.width(1.0f);
+  b.width; // generate b.width();
+
+  // Wherever properties are used in an expression that requires a reference
+  // to their target type, a temporary value is first generated.
+  b.width += 1.0f; // generate float tmp = b.width(); tmp += 1.0f; b.width(tmp);
+  g(b.width); // generate float tmp = b.width(); g(tmp); b.width = tmp;
+}
+
+Properties are not restricted to member functions:
+
+property
+{
+  pure g_thread_priority(int pri);
+  int g_thread_priority();
+}
+
+f()
+{
+  printf("Thread priority is ", g_thread_priority);
+}
+
+
+

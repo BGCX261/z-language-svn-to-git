@@ -1,0 +1,29 @@
+
+Motivation for meta-programming facilities
+
+(Scourge the existing meta-programming language papers for material on
+this.)
+
+DSLs, optimization [SCK03, The C++ template matrix library optimization,
+Generative Programming has probably something as well], safety
+(type-safe printf?)
+
+Metaprogramming can be used to avoid the speed/safety tradeoff by
+eliminating runtime checks and moving them to compile time.
+
+C's printf("%s", "Hello world!"); - fast but unsafe
+C++'s iostreams - cout << "Hello world!" - safe but slow
+
+Best of both worlds:
+
+printf("%s", "Hello world!");
+
+=> meta { check_args("%s", String); generate printf("%s", "Hello world!"); }
+
+Guy Steele argues, "we need to put tools for language growth in the hands
+of the users." [Growing a language]
+
+[SCK03] Sean Seefried, Manuel M. T. Chakravarty, and Gabriele Keller.
+Optimising embedded DSLs using Template Haskell. In Draft Proc. Implementa- 
+tion of Functional Languages, 2003. 
+

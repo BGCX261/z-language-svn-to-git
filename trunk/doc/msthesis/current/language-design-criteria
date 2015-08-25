@@ -1,0 +1,28 @@
+
+How should we design a C-family language so that it is easily
+meta-programmable?
+
+(needs work)
+
+Criteria:
+
+1. It should be easy to move between code and its representation:
+quote code, unquote code, splice values into quoted code, 
+
+Lisp is the prime example here. To represent a piece of code, you just
+quote it. But, as exemplified by [Nemerle, Metalua, Converge, ...], you
+don't need to rely on minimalistic syntax to achieve this. Where Z is
+different is its C heritage. It causes some headaches (mainly, the
+difference between statements and expressions), but I believe we can 
+
+A special case of the former is move between values and their representation
+  -> need for richer literals than C has
+
+2. Hygiene
+
+Some macro systems are unhygienic, which is generally bad but
+occasionally useful. (Explain. [On Lisp?])
+
+3. Should be syntactically similar to existing metaprogramming
+mechanisms (for the same reason it should be similar to C)
+

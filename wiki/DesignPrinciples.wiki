@@ -1,0 +1,72 @@
+#labels Featured,Phase-Design
+= Z Design principles =
+
+Z is the result of my experience with, and admiration for, the C++ programming language. C++, while not perfect, is among the best tools for performance-oriented and close to hardware tasks. My goal is to create the perfect programming language for such tasks.
+
+== The plan ==
+
+Here is the recipe for Z:
+
+==== Take the useful parts of C++ ====
+
+  * Bias towards *performance*
+  * Basic fundamentals of the type system (objects behave by *by-value semantics, like basic types do*)
+
+==== Fix what's broken ====
+
+  * *Leave out "difficult" features* that are a pain to implement and/or understand such as inheritance, pointers to members, exceptions (at least by default, unless a zero-overhead exception handling solution suddenly materializes), initializer syntax, `#include`
+  * *Provide alternatives* for useful features
+    * Implementation inheritance is replaced with code inclusion
+    * Interface inheritance might actually be useful and could be supported in some form
+  * *Fix bug-prone features* (default fall-through in `switch`, default arithmetic conversions, etc.)
+  * *Make the language more user friendly*, if necessary by moving complexity to from the user to the compiler
+    * Function declarations/definitions can be in any order
+    * Pointer syntax will probably have to be replaced with something more reasonable, such as `ptr<int> variable;` or perhaps `ptr int variable;`
+    * Named function arguments, default arguments, foreach, allowing implicit conversions of even sequences thereof (must provide a way to avoid unwanted results)
+
+==== Don't fix what's not broken ====
+  * Syntax
+    * Redesigning the syntax from scratch might benefit people who are learning Z as their first language, but I'm not ashamed to admit that I quite like C. (Although I'm quite willing to drop the pointer syntax.) Besides, the existence of a huge C/C++/Java/C# community makes the idea absurd.
+  * Preprocessor
+    * Well, technically it *is* broken, but I don't think it needs to be removed altogether. It might use some improvement though.
+
+==== Add useful features ====
+  * Metaprogramming
+  * Tuples (perhaps)
+  * Named arguments
+  * Make user-defined types completely interchangeable with the built-in types
+  * Have Unicode support built in (32-bit `char`, `string` uses UTF-8 by default)
+  * etc.
+
+
+== Principles ==
+
+Some of the guiding principles governing the design of Z are:
+
+=== Be performance-oriented ===
+
+Follow the zero-overhead principle ("what you don't use, you don't pay for"). Religiously.
+
+In addition, provide a variety of tools to help squeeze that last drop of performance out of the hardware.
+
+=== Support "good" programming ===
+
+Try to make large-scale development as possible: aid the programmer in 
+  * minimizing dependencies
+  * writing readable code
+  * spotting bugs
+  * avoiding repeating themselves
+
+=== Support "bad" programming ===
+
+It is important to make large-scale programming as little painful as possible. Equally important it is to make small-scale programming as fun as possible. Avoid needless bureaucracy. "Hello world" should be a matter of:
+{{{
+main()
+{
+  io.println("Hello world!");
+}
+}}}
+
+
+
+

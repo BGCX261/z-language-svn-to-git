@@ -1,0 +1,31 @@
+TODO also take into account variadic functions
+
+Given the function declarations
+
+U1 f(T11 n11 {= d11}, T12 n12 {= d12}, ...);
+U2 f(T21 n21 {= d21}, T22 n22 {= d22}, ...);
+...
+
+and the function call f({n1: } x1, ...);
+
+Which f to call?
+
+A two-phase strategy:
+
+  for (signature in all signatures of f)
+    for (argument in function call arguments)
+      test argument against signature;
+
+  if (all arguments match precisely one signature of f exactly)
+    found_match();
+  if (all arguments match precisely one signature of f with conversions)
+    found_match();
+  else
+    error("Ambiguous or no match for f(...)");
+
+Exact match:
+  Argument of type T matches a formal parameter of type T, ref T or ref const T.
+Matching with conversion:
+  Argument of type U, that can be implicitly converted (see conversions.txt) into T,
+  matches a formal parameter of type T or ref const T.
+

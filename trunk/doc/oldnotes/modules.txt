@@ -1,0 +1,37 @@
+TODO module system ('module' is just a short name for 'namespace', 'package', etc.)
+
+Something like:
+
+module std
+{
+  int stuff;
+
+  module io
+  {
+    // can use 'stuff' as it's in the parent module
+    print(string s);
+  }
+}
+
+module program
+{
+  // can use std, std.io, std.io.print() here
+
+  {
+    use std;
+    // can use io.print() here
+
+    {
+      use io;
+      // can use print() here
+    }
+  }  
+}
+
+'module' can be used in declarative context (or actually, why not in any
+context?)
+'use' can be used in any context; it brings all identifiers from the given
+module to the current scope.
+'use' expressions should probably be restricted to the start of the scope to
+minimize mistakes, at least in declarative contexts. In imperative context,
+this won't be as big a problem because... (explain)

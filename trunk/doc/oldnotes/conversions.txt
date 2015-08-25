@@ -1,0 +1,52 @@
+This document concerns itself with implicit (or automatic) conversions.
+Casts are dealt with in casts.txt.
+
+Conversions can be invoked
+
+- manually: <type>(<value>) converts <value> into <type>
+- by assignment: <id> = <value> // <value> is converted to typeof(<id>)
+- by passing arguments to a function
+
+For convenience of user, there exist predefined conversions between
+built-in types, so that they can be used in place of each other.
+
+f(int16);
+
+f(123i8); // 123, an int8, is converted to int16 implicitly
+
+For convenience of library writer, several implicit conversions can be
+performed in sequence so that only the necessary conversions need be
+written:
+
+f(int16);
+
+f(256u8); // Translated to f(int16(uint16(256u8)))
+
+Conversions are, by convention, global functions called from. For example,
+conversions between types int8, uint8, int16, uint16 are:
+
+// Safe, widening conversions:
+safe, cost(1)
+{
+    int16 from(int8);
+    uint16 from(uint8);
+}
+
+// Signedness conversions that can fail but are still safer than
+// narrowing conversions:
+cost(2)
+{
+    int16 from(uint16);
+    uint16 from(int16);
+    int8 from(uint8);
+    uint8 from(int8);
+}
+
+// Narrowing conversions, performed last
+cost(3)
+{
+    int8 from(int16);
+    uint8 from(uint16);
+}
+
+Conversion order is such that the conversions with the smallest cost are performed first, if possible.

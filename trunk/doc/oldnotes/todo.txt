@@ -1,0 +1,21 @@
+types.txt
+  - general description of type system
+  - const?
+  - references, pointers
+
+casts.txt
+  - T cast<T>(U u)?
+
+functions.txt
+  - function calls and declarations, algorithm to separate one from
+    the other
+
+tuples.txt
+  - when we need'em
+
+conversions.txt
+  - more
+
+overload_resolution.txt
+  - pseudocode for resolution algorithm
+

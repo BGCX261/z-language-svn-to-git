@@ -1,0 +1,12 @@
+We present the requirements for the metalanguage:
+
+1. It must fit seamlessly into the target language. (Parempi
+sana talle?) The metalanguage must be both readable and writable by
+someone who is fluent in the target language.
+
+The best case is that the metalanguage is the same as the target
+language (obviously except necessary extensions)
+
+	2. The metalanguage must ..
+
+

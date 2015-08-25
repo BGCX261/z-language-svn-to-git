@@ -1,0 +1,11 @@
+Z implements typesafe variadic functions as metafunctions that take tuples as their arguments.
+
+print();
+print(int i);
+print(string s);
+
+meta print(Tuple t)
+{
+  generate print(t.head);
+  generate print(t.tail);
+}

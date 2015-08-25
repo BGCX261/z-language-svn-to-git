@@ -1,0 +1,26 @@
+Stages of compilation:
+
+C compiler
+
+Lexical analysis, parsing and syntax checking
+Intermediate code generation
+(Optimizing)
+Assembly code generation
+(Optimizing)
+
+C- compiler
+
+Lexical analysis and parsing
+Syntax checking
+Intermediate code generation
+Assembly code generation
+
+Z compiler
+
+Lexical analysis and parsing
+Syntax checking
+Macro reduction
+Intermediate code generation
+Assembly code generation
+
+

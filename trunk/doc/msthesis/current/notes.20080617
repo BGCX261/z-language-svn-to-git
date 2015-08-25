@@ -1,0 +1,77 @@
+
+Should we have method to produce AST?
+
+For instance,
+
+code
+{
+	1 + 1
+}
+
+Perhaps even
+
+expr
+{
+	1 + 1
+}
+
+stmt
+{
+	1 + 1;
+}
+
+I'm specifically thinking about:
+
+f()
+{
+	Ship s;
+	Player p;
+	Enemies e;
+
+	meta
+	{
+		for (x in ???)
+		{
+			generate $x.update();
+		}
+	}
+}
+
+What should ??? be?
+
+Assume that [a, b, ...] produces an array of a proper type. Then-
+
+	meta
+	{
+		for (x in [expr s, expr p, expr e])
+		{
+			generate $x.update();
+		}
+	}
+
+	->
+
+	meta
+	{
+		generate $(expr s).update();
+		generate $(expr p).update();
+		generate $(expr e).update();
+	}
+
+	->
+
+	meta
+	{
+		generate s.update();
+		generate p.update();
+		generate e.update();
+	}
+
+	s.update(),
+	p.update();
+	e.update();
+
+So 'expr' would in essence be Lisp's quote.
+
+How to handle name capture?
+

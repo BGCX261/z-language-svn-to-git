@@ -1,0 +1,20 @@
+// 20080603
+// Code for the 'if' statement
+// Plugs into the parser of Statement and expects the tokens 'if', '(',
+// an Expression, ')', and a Statement
+
+// Actually a metafunction
+
+// meta Statement if(Expression expr, Statement stmt) { ... }
+
+syntax Statement if ( Expression@expr ) Statement@stmt
+{
+	goto_if_true(expr.type == bool.type, ok);
+	fail("Expression not of boolean type");
+ok:
+	Label label = gen_label();
+	// TODO generate code like:
+	// goto_if_false($expr, $label);
+	// $stmt
+	// $label:
+}

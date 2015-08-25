@@ -1,0 +1,90 @@
+To evaluate something:
+
+${expression}
+
+// A metafunction, or a macro...
+macro annotate(expr)
+{
+	printf(expr.text + " is " + $expr);
+}
+
+macro assert(expr)
+{
+	// All this code is pasted into the "calling" code, with things referring to expr properly decoded
+	// Is this ok?
+	if (!$expr) // "Evaluate" the expression
+	{
+		printf("Expression " + expr.text + " was false at line " + expr.line + ", file " + expr.file);
+	}
+}
+
+// Something like this should work, but obviously it is just hand-waving
+macro static_if(expr, block)
+{
+	if (expr.evaluate()) // Evaluates at compile-time
+	{
+		$block; // Yield expr
+	}
+}
+
+macro repeat(expr)
+{
+	$expr; $expr; // What happens?
+}
+
+int fib(int n)
+{
+	return n == 0 ? 1 : n == 1 ? 1 : fib(n-1, n-2);
+}
+
+== main.z ==
+1	main()
+2	{
+3		int f5 = fib(5);
+4	
+5	 	annotate(fib(5)); // Yields:
+		printf("fib(5)" + " is " + fib(5));
+6
+7		assert(f5 == 8); // Yields:
+		if (!(f5 == 8)) // Expansion must make sure that parentheses are inserted!
+		{
+			printf("Expression " + "f5 == 8" + " was false at line " + 7 + ", file " + "main.z");
+		}
+8	}
+== end of main.z ==
+
+So far, the macro facility is not (much) more complicated than the C macro systems...
+
+
+
+Introducing new syntax?
+
+For instance,
+
+if < expr >
+  block-expr
+
+would result into evaluating expr statically, and if it fails, substituting block-expr
+
+Actually, even normal statements could be introduced using the new-syntax mechanism...
+
+Expression static_if(Expression expr, Block_Expression block_expr)
+{
+	if (expr.evaluate())
+	{
+		return block_expr;
+	}
+	else
+	{
+		return Expression.null_expr;
+	}
+}
+
+syntax if < $expr > $block_expr
+{
+	return static_if($expr, $block_expr);
+}
+
+if (expr) stmt -> (tässä pitää generoida se labeli myös) branch_if_false expr tmp_label; expr; tmp_label:
+
+

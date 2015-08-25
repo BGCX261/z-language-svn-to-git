@@ -1,0 +1,297 @@
+#summary Place for miscellaneous ideas
+#labels Phase-Design
+
+= Miscellaneous ideas =
+
+== Comment keyword ==
+
+Structured way to comment out code.
+
+{{{
+comment "Commented out because it doesn't work"
+{
+  Some buggy code here
+}
+}}}
+
+== Equivalence operator ==
+
+Does what == does (perhaps only on boolean operators though?), but has a lower precedence:
+
+{{{
+  assert(a == b <=> c == d);
+}}}
+
+Could be accompanied by the implication operator =>:
+
+{{{
+  bool operator =>(bool lhs, rhs)
+  {
+    return !lhs || rhs;
+  }
+}}}
+
+However, <= cannot be used as it stands for less than - acceptable?
+
+== Example: reading binary data and switching endianness ==
+
+{{{
+comment "Sketches"
+{
+    struct Type
+    {
+        bool is_atomic();
+        Array<Member> members;
+        
+        invariant()
+        {
+            is_atomic() <=> members.size() == 0;
+        }
+        
+        Endian endian;
+    }
+
+    struct Member
+    {
+        String name;
+        Type type;
+    }
+}
+
+module z.binary;
+
+use z.meta.Type;
+use z.meta.Member;
+use z.runtime.Endian;
+
+T read<Type T>(ptr byte data)
+{
+    test
+    {
+        assert(read<int>(ptr (byte[] { 0, 0, 0, 0 })) == 0);
+        assert(read<int<endian: big>>(ptr (byte[] { 0, 0, 0, 1 })) == 1);
+        assert(read<int<endian: little>>(ptr (byte[] { 0, 0, 0, 1 })) == 16777216);
+        // test complex types
+    }
+    
+    fix_endians(ref T t)
+    {
+        for (Member m in T.members)
+        {
+            if (m.type.is_atomic())
+            {
+                if (Endian.current() != m.type.binary_representation.endian)
+                {
+                    cast<ref array<byte, m.type.size>>(t.${m.name}).reverse();
+                }
+            }
+            else
+            {
+                fix_endians(t.m); // How does this work? Is not m looked up in t's scope?
+                // suggestions...
+                // t.$m
+                // t.${m.name}
+            }
+        }
+    }
+
+    mymcpy(cast<ptr byte>(ptr result, data, sizeof(T)));
+    fix_endians(result);
+}
+}}}
+
+Problem 1:
+ * how to quote and unquote stuff
+ * t.${m.name} seems fine, but when (and how) should it be unquoted? Textual or semantical injection?
+
+Problem 2:
+ * which parts of this program are executed in compile time?
+ * "everything that can"?
+ * and how exactly are we going to achieve that?
+  
+What is bug-prone here?
+ * m.type.size probably gets written as sizeof(m), sizeof(m.type), ...
+ * is sizeof a good idea at all?
+ * x.type, or typeof(x) to the rescue?
+
+== Every type ==
+
+It must be possible to do something akin to
+
+{{{
+struct Every<Sequence<T> seq>
+{
+  ref Sequence<T> m_seq;
+
+  bool operator==(T other)
+  {
+    for (T t in seq)
+      if (t != other)
+        return false;
+
+    return true;
+  }
+
+  bool operator!=(T other);
+  // Etc...
+  // Actually, it should be possible to do something like
+  magical member macro bool 'any_function'(T other)
+  {
+    for (T t in seq)
+      if (!t.any_function(T other))
+        return false;
+
+    return true;
+  }
+}
+}}}
+
+and in similar vein struct Some<Sequence<T> seq>, so that you can do things like
+
+{{{
+  f(ref X x, ref Y y, ref Z z)
+  {
+    assert(Every([x, y, z]) != null);
+    //...
+  }
+
+  f(int an_int)
+  {
+    bool divisible_by_three(int i)
+    {
+      return (i % 3) == 0;
+    }
+
+    assert(Some([i, i+1, i+2]).divisible_by_three();
+    // or: (how does this work out?)
+    assert(divisible_by_three(Some([i, i+1, i+2]));
+  }
+}}}
+
+Details need to be worked out, obviously. The hypothetical macro 'any_function' will have to be able to take a variable number of arguments, for starters.
+
+== The 'it' keyword ==
+
+The special keyword `it` that denotes the value of the controlling expression in `if`, `do`, `while` and `switch` statements. The idea comes from Lisp (See "On Lisp" by Paul Graham) where you can define anaphoric macros such as `aif`:
+
+{{{
+  (defmacro aif (test then &optional else)
+    `(let ((it ,test))
+       (if it ,then ,else)))
+}}}
+
+In statements taking a boolean value as their controlling expression (`if`, `do`, `while`), `it` must refer to the value before implicit conversion (if any) to be of any use. This obviously requires allowing implicit conversions in such statements. I haven't decided yet whether to allow them. In recent languages, implicit conversions have been a no-no. But are they inherently bad?
+
+{{{
+ptr<Database> get_database();
+
+f()
+{
+  if (get_database())
+  {
+    print(it.lookup("hello"))
+  }
+}
+}}}
+
+== A custom attributes example ==
+
+An attribute to avoid dynamic memory allocation:
+
+{{{
+  struct string<
+    bool noalloc = false, // allocate all memory statically?
+    int reserve = 32      // how much to reserve by default
+  {
+    // ... string implementation
+  };
+
+  struct vector<
+    type t,
+    bool noalloc = false,
+    int reserve = 0>
+  {
+    // ... vector implementation
+  };    
+
+  noalloc reserve<16> {
+    string ip_address; // Behaves like string but no dynamic allocation
+    vector<byte> buf;  // Behaves like a simple C array of 16 bytes
+  }
+}}}
+
+The attributes are actually translated to type parameters:
+
+{{{
+  string<noalloc: true, reserve: 16> ip_address;
+  vector<byte, noalloc: true, reserve: 16> buf;
+}}}
+
+Other type arguments could be specified as well:
+
+{{{
+  encoding<utf16>
+  {
+    string utf16_encoded_string;
+    string_buffer utf16_encoded_string;
+  }
+}}}
+
+This obviously relies on "convention over configuration" type of thinking, like policy arguments of C++ templates. But much better error messages can be given:
+
+{{{
+  encoding<utf16>
+  {
+    string foo;
+    int foo_len; // error: "Type 'int' does not have parameter 'encoding'
+  }
+}}}
+
+Is this a good syntax? Is it bad that these custom attributes look the same as other attributes?
+
+== Interaction between customizable types ==
+
+A big problem (not with custom attributes per se, but with customizable types): how to ensure that the different versions of types such as `string` work together?
+
+{{{
+f(ref string<encoding: utf8> s1)
+{
+  string<encoding: utf16> s2 = "Blah";
+  s1 = s2; // What happens?
+}
+}}}
+
+== Inclusion of an object changes the including type ==
+
+{{{
+struct Game
+{
+  World world;
+  Player player;
+  // ...
+  
+  update()
+  {
+    // game-specific updating
+  
+    // "world.update();" is included at the end
+    // "player.update();" is included at the end
+  }
+
+  // ...
+}
+
+struct World
+{
+  update() { ... }
+
+  // This is how the raw mechanism would probably look like.
+  // We still need a way to express this more intentionally
+  // and reuse this.
+  on_include<Type includer, Identifier me>
+  {
+    // meditate on this
+    includer.functions.find(update()).body.push_back(me + ".update();");
+  }
+}
+}}}

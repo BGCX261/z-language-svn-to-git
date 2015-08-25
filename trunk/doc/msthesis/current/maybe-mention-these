@@ -1,0 +1,15 @@
+
+-syntax extensions:
+
+macro unless(Expression cond, Statement body)
+{
+	generate
+	{
+		if (!$cond)
+			$body;
+	}
+}
+
+syntax unless (expr@cond) stmt@ -> unless($1, $2);
+
+

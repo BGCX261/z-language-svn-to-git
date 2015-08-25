@@ -1,0 +1,33 @@
+Intro.
+
+See [motivation]
+
+A compile-time metaprogramming facility must contain three facilities:
+
+- The ability to create a representation of code (in Lisp, quoting)
+- The ability to inject (splice) expressions into the generated 
+expressions (in Lisp, unquoting)
+- The ability to invoke code at compile-time (in Lisp, macros)
+
+(NOTE how about program analysis ie traversal of AST?)
+
+The representation in code can be a quoted list (as in LISP)
+LISP:
+
+;; check the syntax!
+(defmacro foo (args)
+	`(do ,args))
+
+(foo (1)) -> (do (1))	
+
+Nemerle:
+
+<[ 1 + $(g (y)) ]>
+
+Metalua:
+
++{ meta_expression -{ unquoted_expression } }
+
+
+
+

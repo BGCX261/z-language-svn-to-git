@@ -1,0 +1,111 @@
+Yet another 3am session of note-writing.
+
+Meta serialization
+==================
+
+A serialization method in objects that is called to produce a source
+code representation of an object.
+
+concept Meta_Serializable
+{
+	Expression meta_serialize();
+}
+
+struct List<T>
+{
+	init() { /* initialize empty list */ }
+
+	// Initializer taking a variable amount of arguments;
+	// List<int>(1, 2, 3) works
+	init(T... objects)
+	{
+		for (T t in objects)
+			push_back(t);
+	}
+
+	append(T t);
+	// other methods
+
+	// implementation
+	struct Node<T>
+	{
+		T t;
+		Node<T>* next;
+	}
+
+	Node<T>* first;
+	Node<T>* last;
+
+	Expression meta_serialize()
+	{
+		String expr = "List<" + T + ">(";
+
+		// should yield expr List(1, 2, 3) in a following kind of
+		// fierce pseudo-code - obviously this should be done at
+		// expression level, not string level
+		bool first = true;
+		for (T t in this)
+		{
+			if (!first)
+				expr += ", ";
+
+			first = false;
+
+			expr += t.meta_serialize().to_string(); // ugh
+		}
+		
+		expr += ")";
+
+		return parse_expression(expr);
+	}
+}
+
+5.meta_serializa() => expr 5
+
+"string".meta_serialize() => expr "string"
+
+[1, 2, 3].meta_serialize() => expr [1, 2, 3]
+
+struct Foo
+{
+	int x = 0;
+	int y = 1;
+}
+
+Foo foo; foo.x = 0; foo.y = 1;
+
+foo.meta_serialize() => expr foo(x: 0, y: 1);
+
+How is it used?
+
+meta
+{
+	List<int> stuff = make_list(1, 2, 3);
+
+	generate print($stuff); 
+	=> generate printf($(stuff.meta_serialize()))
+	=> generate printf(List<int>(1, 2, 3)); 
+	// 1, 2, 3 are results of meta_serialize as well
+
+	// In a sense, a call to meta_serialize is a kind of
+	// operator $? In the same way that operator -> is in C++, meaning
+	// that it is applied repeatedly until we get an expression that we
+	// can splice into the calling code. (-> gets called until we get a
+	// pointer)
+}
+
+Or should it be called 'operator evaluate' (since, well, in a sense the
+$ operator evaluates its arguments before 'lifting' it from the meta
+realm)?
+
+$(1 + 1) is 2, after all :)
+
+Or unquote?
+
+struct int
+{
+	static Expression eval();
+	{
+	}
+}
+

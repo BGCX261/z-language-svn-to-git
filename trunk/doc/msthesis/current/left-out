@@ -1,0 +1,12 @@
+Don't even try to touch:
+
+-modules (even though they can be mentioned in passing)
+
+-generics (although they might warrant a mention as well, such as
+ Type T = list(int); // call a metafunction)
+
+-optimization (generate straightforward and stupid code, but make the
+ language so that optimizers can be easily written)
+
+-exceptions
+

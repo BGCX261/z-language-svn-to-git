@@ -1,0 +1,91 @@
+#summary Literals
+
+= Todo =
+
+ * Floating point literals
+
+= Introduction =
+
+= Details =
+
+Integer literals consist of:
+ * optional prefix determining the base of the following number
+ * number denoting the value of the literal
+ * optional postfix that determines the type of the literal
+
+Normally, the type of an integer literal is the smallest signed integer type that can hold the constant.
+{{{
+typeof(12345) == int16;
+typeof(-12345) == int16;
+}}}
+
+The following prefixes are allowed:
+{{{
+0x - base 16
+0d - base 10 (the default)
+0o - base 8
+0b - base 2
+}}}
+
+The following postfixes can be used to force the type (i: signed integer, u: unsigned integer)
+{{{
+i8
+i16
+i32
+i64
+u8
+u16
+u32
+u64
+}}}
+
+If the value of the literal is larger than the specified type but can be fit
+into the same number of bits, the value is taken as the raw representation of
+the value.
+{{{
+0xffi8 == -1;
+}}}
+
+Boolean literals: true and false. (Type: *bool*)
+
+Character literals consist of a character surrounded by single quotes. The character can  be specified by:
+ * Inserting it literally:
+{{{
+'a';
+}}}
+ * Escaping a character with a special meaning. Allowed escape characters are:
+{{{
+audible alert (bell) BEL  \a   7
+backspace            BS   \b   8
+horizontal tab       HT   \t   9
+newline              LF   \n  10
+vertical tab         VT   \v  11
+formfeed             FF   \f  12
+carriage return      CR   \r  13
+backslash            \    \\  92
+
+'\n'; // Newline
+}}}
+ * Using integer literals preceded by a backslash:
+{{{
+'\123';	 // '{'
+'\0x1234';     // Same as 'U1234'
+'\0d92';       // backslash
+'\0o40';       // ' '
+'\0b10010101';
+}}}
+
+Type of a character literal is *char*.
+
+String literals consist of sequences of character literals, without the single 
+quotes and surrounded with double quotes instead. Two adjacent string literals
+are concatenated into one.
+{{{
+"Hello world!\n";
+"Katakana example: \x30A1";
+"Two strings " "concatenated";
+}}}
+
+Type of a string literal is *string*.
+
+

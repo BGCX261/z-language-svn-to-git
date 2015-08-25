@@ -1,0 +1,128 @@
+
+What is a Lisp macro?
+
+It (1) defines a procedure (that exists only at compile time) that,
+when invoked, (2) enters the "metaprogramming realm", whose contents are then
+(3) spliced into the calling code.
+
+We don't have to combine all of those facilities, although it is often
+useful. For example, we might want to step into the meta world without
+calling a function:
+
+alert(String message)
+{
+	meta 
+	{
+		if (sys.os.equals("win32"))
+			generate MessageBox($message);
+		else
+			generate printf($message + "\n");
+	}
+}
+
+Here, meta {} starts compile-time execution (facility 2), and generate
+injects code (facility 3) into the point where the "meta execution"
+started.
+
+Still, it's useful to have macros - that is, something that looks like
+a function but actually invokes metacode. But how?...
+
+f(String name)
+{
+	printf("%s", name);
+
+	-> 
+
+	meta
+	{
+		meta_printf("%s", name);
+	}
+}
+
+// How is meta_printf implemented? Something like...
+meta_printf(String s, Object args...)
+{
+	if (metaof(s).is_constant)
+	{
+		check_args(s, args);
+		generate actual_printf(s, args);
+	}
+	else
+	{
+		error("Unsafe printf call\n");
+		// or better, leave the check to runtime... if possible
+	}
+}
+
+'Meta' functions do need thinking. Should their arguments be different
+from normal functions? Or should they be somehow special?
+
+How about, do metafunctions return values?
+
+int metaf(int x, int y, String z)
+{
+	generate
+	{
+		if (metaof(x).is_constant)
+			print("x is constant");
+		if (metaof(y).is_temporary)
+			print("y is temporary");
+		if (metaof(z).is_reference)
+			// and so on... this could be bullshit
+		print($x, $y, $z);
+	}
+
+	return 1; // what?
+}
+
+macro some_other(int x, int y)
+{
+	int result = metaf(x, y, "foo");
+	generate print(result);
+}
+
+f()
+{
+	some_other(1, 2);
+	// -> ?? what happens?
+}
+
+Should the two things - generating code and computing values at
+compile-time, be mixed at all?
+
+===
+
+How to make do with expressions and statements.
+
+We need to have both, and we need to be able to take a statement as a
+parameter. Or any AST element in fact. Function declaration, perhaps?
+
+(Prepare for the eventual possibility of introducing new syntax)
+
+Usually, functions take a set of expressions as their arguments.  If
+language is extended with keyword arguments, they might also take
+keywords.
+
+<ex>
+macro int f(int x, int y) { return x + y; }
+
+f(1, 2); // -> 3
+</ex>
+
+<ex>
+macro Type List(Type T)
+{
+	// Here we have a problem. We cannot have an expression whose value
+	// is struct.
+	struct result
+	{
+		T elem;
+		ptr List(T) tail; // Uh oh... must be lazily evaluated!
+	}
+
+	return result;
+}
+</ex>
+
+===
+

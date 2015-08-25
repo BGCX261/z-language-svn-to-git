@@ -1,0 +1,215 @@
+Problem 1: Making void optional in C grammar
+
+Improve C grammar so that you can use
+
+f();
+
+instead of
+
+void f();
+
+This requires differentiation between imperative and declarative
+contexts and assuming that things that look the same behave differently
+in each. For example:
+
+struct A
+{
+	int x = 0;
+	f(); // declaration
+	f(int); // declaration
+	f(x); // declaration
+	f(int i); // declaration
+
+	g()
+	{
+		f(); // call
+		void f(); // declaration
+		
+		f(int); // call
+		f(x); // call
+		void f(int); // declaration
+
+		f(int i); // declaration
+	}
+}
+
+I have something written on paper about this. Also partially associated
+with problem 4 (remove symbol table dependencies from C grammar), as
+this would mean that f(int) and f(x) would be both interpreted as a
+function call (if in imperative context) and a function declaration (if
+in declarative).
+
+
+
+Problem 2: Extending C grammar so that expressions can occur whenever
+types can occur. (Can they not now?)
+
+For example, so that
+
+f()
+{
+	List(int) foo;
+	// or even List<int> foo;
+}
+
+becomes legal.
+
+TODO check need for this
+
+
+
+Problem 3: Introducing named and default parameters to C. Uh oh.
+We also need overloading.
+
+f(int a = 1, int b); // f1
+
+f(int a = 1, int b, int c = 2) // f2
+{
+	//
+}
+
+f(1, 2, 3) -> f(a: 1, b: 2, c: 3);
+
+
+All calls to f2 with c not defined are ambiguous!
+
+Should we ban overloading when default arguments are used?
+
+How about named?
+
+How about
+
+f(int a = 1, int b = 2);
+f(float b = 1, float a = 2);
+
+f(1.0, b: 1); err ??
+
+Need to work out details.
+
+Also some paper notes here.
+
+
+
+Problem 4: Removing symbol table dependencies from the C grammar. Also
+remove order dependencies and the need for forward declarations.
+
+module
+{
+	f()
+	{
+		g();
+	}
+	
+	g()
+	{
+		//
+	}
+}
+
+The reason for this is to make the parser simpler. Is this a reason
+profound enough?
+
+I think this also means we have to change the pointer syntax. We can't
+know whether 
+
+f()
+{
+	a * b;
+}
+
+means "b is pointer to a" or "a times b". Suggest 'ptr T' to denote
+pointer to T, and perhaps 'ptr t' to take a pointer of t. Or &T / &t for
+both.
+
+
+
+Problem 5: Proper module system.
+
+Do away with includes completely.
+
+module game
+{
+	use sys.io.print;
+
+	main()
+	{
+		print("hello");
+	}
+}
+
+Problem 6: Structs to have constructors, destructors, default
+initializers.
+
+
+struct A
+{
+	int a = 0;
+	int b = 5;
+
+	// Approach 1 is to autogenerate this:
+	init(int a = 0, int b = 5)
+	{
+		this.a = a, this.b = b;
+	}
+}
+
+A a; -> A(a: 0, b: 5);
+A a = A(a: 1, b: 2);
+
+// And approach 2 is to autogenerate
+A a; ->
+
+A a;
+do {
+	a.a = 0;
+	a.b = 5;
+}
+
+
+struct A
+{
+	int a = 0;
+	int b = 5;
+
+	init(int a, int b)
+	{
+		
+	}
+}
+
+
+Problem 7: Make away with the mandatory ;, and meanwhile extend the
+grammer so that struct {} is an expression when a statement is not
+possible, but a statement otherwise.
+
+// statement
+struct A
+{
+}
+
+// statement
+struct B
+{
+}
+
+// This not possible:
+struct A
+{
+} a;
+
+// But this is:
+
+Type make_a()
+{
+	Type result = struct {}; // an expr
+
+	return result;
+	// or:
+	return struct {}; // an expr
+}
+
+This might be possible:
+
+struct {} a; // unnamed struct always an expr
+
+

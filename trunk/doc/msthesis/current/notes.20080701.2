@@ -1,0 +1,101 @@
+
+Statements yielding values
+==========================
+
+Could we allow statements to yield values in some cases?
+
+Let's examine different statements and what kind of values they would
+produce.
+
+expression_statement
+	: expression ';' -> value of expression
+	| ';' -> void
+	;
+
+if_statement
+	: 'if' '(' condition ')' statement 'else' statement -> value of
+	winner if types match, else void
+	| 'if' '(' condition ')' statement -> void
+	;
+
+block_statement
+	: { statement* } -> value of the last statement or void
+	;
+
+switch_statement
+	: 'switch' '(' expression ')' '{' case_block* '}'
+	;
+
+case_block
+	: 'case' expression ':' statement*
+	;
+
+-> the chosen value if types match, otherwise void
+
+A new keyword yield:
+
+expression
+	: ...
+	| 'yield' expression
+	;
+
+Yield can be used to 'return' a value from a block_statement or a
+case_statement. (A feature I often miss in C - makes it a necessity to
+wrap the code inside a function and use return to express the same
+structure)
+
+I'm not sure what value the looping constructs should yield, if any.
+Perhaps the loop variable?
+
+Occasionally it's nice to know where the iteration stopped.
+
+String[] names = [ "foo", "bar", "zot" ];
+
+int location = for (int i = 0; i < names.size(); ++i)
+{
+	if (names[i] == "bar")
+		break;
+}
+
+assert(location == 1);
+
+Using statements instead of expressions might screw up parsing, though.
+At least using a statement (grammatically) instead of just any
+expression would not work. Obviously.
+
+statement
+	: ...
+	| expression ';'
+	;
+
+expression
+	| ...
+	: statement // cometh hideous left-recursion
+	;
+	
+After all, the type declaration rule looks like:
+
+expression identifier;
+
+So obviously (?) expressions could not look like the if statement, for
+example.
+
+But perhaps we can still use statements to return values from functions 
+and initialize variables:
+
+function int max(int lhs, int rhs)
+{
+	if (lhs > rhs)
+		lhs;
+	else
+		rhs;
+}
+
+variable_declaration
+	: expression identifier ';'
+	| expression identifier '=' statement
+	;
+
+It seems that inside C, there's a nice little functional language,
+struggling to find its way out...
+

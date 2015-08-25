@@ -1,0 +1,8 @@
+Types in Z fall into the following categories:
+
+- Classes (see classes.txt)
+- Functions
+- Tuples (see tuples.txt)
+- References to types
+
+

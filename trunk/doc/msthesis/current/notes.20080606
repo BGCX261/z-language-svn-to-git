@@ -1,0 +1,83 @@
+Semantics of 
+
+meta <expression>
+
+Expression is run at compile-time and its value is substituted instead 
+of the expression. For example:
+
+main()
+{
+	printf(meta "Hello world!\n");
+}
+
+main()
+{
+	printf("fac(100): " + meta fac(100) + "\n");
+}
+
+Inside a meta block, you can perform computation on compile-time things,
+such as code
+
+// A metafunction (a normal function that can only be called from metacode)
+Type vector(Type t)
+{
+	return struct
+	{
+		init() { data = 0; size = 0; }
+		T* data;
+		int size;
+		T op[](int idx) { return data[idx]; }
+	}
+}
+
+main()
+{
+	// Introduces a meta value. Meta values may be only used in
+	// contexts ... well, let's call them 'meta' contexts :)
+	// Because they have no runtime representation.
+	Type Int_Vector = meta vector(int);
+	
+	// Such as in type declarations. This is normal code.
+	Int_Vector intv; 
+
+	// and calls to other metafunctions
+	Type Int_Vector_Vector = meta vector(Int_Vector); 
+}
+
+You can have metafunctions generate code:
+
+main()
+{
+	meta
+	{
+		generate(printf("Hello world!\n"));
+	}
+}
+
+reduces to
+
+main()
+{
+	printf("Hello world!\n");
+}
+
+The exact mechanisms of how this should work?
+
+...
+
+AST generate_printf(String msg)
+{
+	return generate printf($msg);
+}
+
+main()
+{
+	meta
+	{
+		// + concatenates AST blocks
+		yield generate_printf("Foo\n") + generate_printf("Bar\n");
+	}
+}
+
+Does 'generate' simply yield a value of type AST?
+

@@ -1,0 +1,25 @@
+Why a C-like language?
+======================
+
+We deliberately want the language to be, to some extent, compatible with
+C. Not 100% compatible, but as close as we can.
+
+The reason is simply the target audience: with the advent of C, C++,
+Java and C#, most programmers are familiar with C-like syntax and
+therefore can start to use the language with little perceived effort.
+['perceived' is the key here, or is it? Refer to a study somewhere?
+Maybe ask actual programmers. "Wanna learn a new language if it looks
+like a) C b) Like Pascal?" c) Like Python?]
+
+C++ is an example of a language that shares the same goals as ours:
+"Don't pay what you don't use" rule, [Design & Evolution of C++] etc.
+
+One of the design principles of C++ has been to keep it "as close to C
+as possible, but no closer". [the reasons for this?]
+
+It is argued C++ that has become unnecessarily complicated because C
+compatibility has been a necessity. [reference should not be difficult
+to find] But we don't have that burden, and therefore "as close as we
+can" is a little bit farther than C++ has been forced to manage with.
+This also enables us to remove a couple of warts from C.
+

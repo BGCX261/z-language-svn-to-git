@@ -1,0 +1,50 @@
+TODO tuples
+
+Tuple is a collection of values whose order, number and types are fixed
+and known at compile time. They are in a sense similar to primitive
+classes. The difference is that tuples have no members (other than
+the predefined .head, .tail, and operator[]).
+
+tuple_expression:
+  primary_expression ',' tuple_expression
+
+meta printf(tuple t);
+
+f()
+{
+  (int, string) pair = (1, "foo");
+  // () as an expression is both an empty type and an empty tuple.
+  () nothing = (); 
+  // Tuple with one member is equivalent to the member - otherwise
+  // we would have to have separate grouping parentheses and tuple
+  // parentheses.
+  int x = 5;
+  // is equivalent to:
+  (int) x = 5;
+  // is equivalent to:
+  int x = (5);
+
+  // 'void' should be, by convention, either an empty tuple or an empty structure (If needed)
+
+  // Type of pair[int i] depends on value of i and therefore i needs to be
+  // known at compile time, which may confuse programmers. Is this good?
+  // Should pair<int i> be used instead?
+  int x = pair[0];
+  string y = pair[1];
+
+  // TODO Needs thinking - tuple as a metatype similar to 'type'.
+  // A type that has both compile-time and run-time properties.
+  // Also see variadic_functions.txt.
+  tuple t = pair;
+  type first_type = t.types[0];
+  type second_type = t.types[1];
+  assert<first_type == int>;
+  assert<second_type == string>;
+  int first_value = t[0];
+  // Do we also need value as a metatype?
+  value first = t[0];
+
+  printf('a', "foo");
+  printf(pair); // What?
+}
+

@@ -1,0 +1,16 @@
+
+Better safety at runtime:
+
+-Type-checked printf
+ -Macros
+
+Just better:
+-Automatic logging
+-Automatic printing of values (for example,
+ print an object of type struct { int x; String y; })
+
+(Perhaps automatic profiling?)
+
+-Aspect-oriented programming
+ -Is this what Yegge talked about 'advice' systems?
+

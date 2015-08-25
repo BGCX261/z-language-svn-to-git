@@ -1,0 +1,217 @@
+
+It has become obvious to me that the metalanguage has to support some kind of
+variant system.
+
+There are pressures to create moderately high-level metalanguage, to ease
+development of metacode.
+
+On the other hand, if we want it to have the same syntax and semantics as the
+core language, it must be relatively low-level.
+
+Or must it?
+
+Research problem: Can the requirements of "a good console games programming
+language" (efficient, zero-overhead, close-to-hardware, highly optimizable),
+and the requirements of a high-level metalanguage (fluent manipulation of
+language constructs, brevity) meet in a single language?
+
+Secondly, what is the minimal language to implement both?
+
+C is sorely missing variants (or maybe we could use unions?)
+
+variant AST
+{
+	ptr Identifier identifier;
+	ptr Function_Call function_call;
+	ptr Number number;
+}
+
+struct Number
+{
+	int value;
+}
+
+struct Identifier
+{
+	String name;
+}
+
+struct Function_Call
+{
+	AST callee;
+	AST[] params;
+}
+
+g(int i)
+{
+	println(i);
+} 
+
+f()
+{
+	meta
+	{
+		AST(new Function_Call(
+			new Identifier("g"),
+			{ AST(new Number(5)) }));
+	}
+}
+
+is the same as
+
+f()
+{
+	meta
+	{
+		generate g(5);
+	}
+}
+
+Which might as well be the same as
+
+f()
+{
+	generate g(5);
+}
+
+Assuming that the compiler can figure out by itself the parts that it must 
+run at compile-time.
+
+We are going to run into trouble with statements and expressions, I believe.
+
+We should be able to just 
+
+
+
+Compilation as metacode reduction
+=================================
+
+f()
+{
+	Type T = meta { something ? int32 : int64 };
+
+	
+}
+
+
+What is an expression?
+======================
+
+if (foo)
+	meta { 1; 2; 3; } // Error! Is this an expression? Or a statement?
+else
+	something_else();
+
+Should statements have values?
+
+A statement, but with a value?
+
+	int x ; 1;
+	{
+		1;
+		2;
+		3;
+	}
+
+But the problem is that the value can not be used unless it is part of...
+
+* function
+
+int f()
+{
+	1; // yield 1
+}
+
+* if-statement (that is a part of a function that ends with the statement
+
+int f()
+{
+	if (true)
+	{
+		1;
+	}
+	else
+	{
+		2;
+	}
+}
+
+But this is not possible:
+
+	int i =
+	{
+		1;
+	}
+
+Even though this looks a bit like array initializers...
+
+	int[] stuff =
+	{
+		1,
+		2,
+		3
+	};
+
+Then again, { ... } should perhaps be both an array initializer and a 
+code block? BAD!
+
+Better:
+
+int[] arr = [1, 2, 3] for array initializer
+
+// Does 'generate' apply to f(1) or f(1); ?
+
+AST code = generate f(1);
+
+This generalizes to "generalized properties", or modifiers, or whatever:
+
+public int i;
+public
+{
+	int i;
+	int j;
+}
+
+public:
+	int i;
+	int j;
+private:
+	...
+
+Maybe we should stick to the normal "everything-is-not-a-value" thinking...
+
+meta
+{
+	for (int i = 0; i < 10; ++i)
+	{
+		// Generate would always generate statements, then
+		generate printf("foo"); 
+	}
+}
+
+This sucks, big time.
+
+This part of the C grammar just sucks.
+
+expression-statement:
+	expression(opt) ;
+
+f()
+{
+	{
+		int; // Type-expression
+	} i; // Type-declaration
+}
+
+f()
+{
+	{
+		// Just normal innocent code...
+		print(1 + 1);
+	}
+
+	i; // Could be something else...
+}
+
+The grammar (and the parser) will therefore have to be a complete major 
+disaster.

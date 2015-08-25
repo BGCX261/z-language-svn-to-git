@@ -1,0 +1,68 @@
+#summary Functions
+#labels Phase-Design
+
+= TODO =
+
+ * Function pointers
+ * Closures
+
+= Introduction =
+
+Functions are the primary method of abstraction.
+
+= Details =
+
+Default arguments:
+{{{
+f(int x = 0);
+float area(
+  float width = height * 2,
+  float height = width / 2);
+}}}
+
+Named arguments
+{{{
+float x = area(height: 1.0f);
+}}}
+
+Multiple return values (tuples)
+{{{
+(int, int) div_mod(int lhs, int rhs);
+}}}
+
+There is no need to specify 'void' as a return type. If the parser cannot
+determine whether it has encountered a function call or a function
+declaration, it uses the context to guess. In declarative context, the
+default is a function declaration, and in imperative context it is a
+function call. If you are in an imperative context and need to write a
+declaration that must look like a function call, use 'void' as a return
+value. For example:
+
+{{{
+f(); // declaration
+f(a); // declaration; a must be a type
+
+g()
+{
+  f(); // function call
+  f(b); // function call; b must be a value
+  h(c d); // declaration
+  void i(); // declaration
+  void f(some_identifier); // declaration
+} 
+}}}
+
+Attributes (see attributes.txt) of functions include:
+  * pure (no side effects - for purposes of optimization)
+    * Example: pure float sin(float f);
+  * safe (function is guaranteed to return and produce a value)
+    * Example:
+      * pure safe int64 operator+(int32 lhs, int32 rhs);
+  * noreturn (function is guaranteed not to return)
+    * Reaching the end of a non-returning function causes a runtime error
+    * noreturn terminate_thread(int return_value);
+
+Operators are global functions with special names, for example:
+
+  pure ref int operator +(int lhs, int rhs);
+  ref int operator prefix ++(ref int i);

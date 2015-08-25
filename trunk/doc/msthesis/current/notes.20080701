@@ -1,0 +1,70 @@
+How to solve this? 
+
+(Not valid code)
+
+sort(ref Collection<T> collection)
+{
+	meta
+	{
+		if (collection.has_method("sort"))
+		{
+			generate $collection.sort();
+		}
+		else if (collection.is_a("RandomAccessCollection")
+		{
+			generate quicksort($collection);
+		}
+		else // We're screved
+		{
+			generate bubblesort($collection);
+		}
+	}
+}
+
+We want C++'s template functions basically.
+
+In C++, the template functions are chosen and instantiated using a kind
+of pattern matching where the arguments are deduced automatically.
+However, our language isn't going to include pattern matching, at least
+yet. This leads to problems when trying to express the solution in a
+"natural" way.
+
+Perhaps macros might be the solution?
+
+Again, pseudo-code until proven workable:
+
+Expression sort(Expression collection)
+{
+	switch (collection)
+	{
+		case Sortable s: generate $collection.sort();
+		case RandomAccessCollection r: generate quicksort($collection);
+		case _: 
+	}
+		
+}
+
+Generally, matching expressions by form would definitely be nice.
+
+	Expression e = expr 0 + 2;
+
+macro Expression optimize(Expression e)
+{
+	switch (e)
+	{
+		case 0 + $expr: return expr $var;
+		case $expr + 0: return expr $var;
+		case 1 * $var: return expr $var;
+		case $var * 1: return expr $var;
+		case $var + $var: return expr 2 * $var;
+		case _: return e;
+	}
+}
+
+One of the first phases of the compiler would translate this to 
+'case add(0, $expr): return expr $var' and so on
+
+See how Scala (and the other functional languages with such constructs)
+does this.
+
+

@@ -1,0 +1,13 @@
+About safety properties of metaprogramming languages
+====================================================
+
+Obviously you shouldn't be able to, say, delete files from within a
+metaprogram. But it seems that in general, when [Tradeoffs in
+metaprogramming] safety issues in metaprogramming are considered, the
+wrong issues are addressed. Having the meta-language "safe" for instance
+in the sense of being able to guarantee that every program halts is akin
+to the old anecdote about wearing life vest on and but removing it when
+embarking to sea, except that the analogy is appropriate [1].
+
+[1] the original talked about enabling safety checks on in debug builds and
+removing then in release builds

@@ -1,0 +1,68 @@
+#summary Attributes
+#labels Phase-Design
+
+= Introduction =
+
+= Details =
+
+Attributes can be used to affect the nature of expressions.
+
+ * pure, safe, noreturn, property, etc.
+ * public, private
+ * virtual
+ * inline
+ * optimize(int)
+
+There are three ways of giving an attribute to an expression.
+
+ * Single attributes. Gives 'attribute' to 'expression'
+{{{
+<attribute> <expression>
+}}}
+
+ * Continuous attributes. Gives 'attribute' to all following expressions until scope ends or another continuous attribute overrides.
+{{{
+<attribute> ':'
+<expression>...
+}}}
+
+ * Scoped attributes. Gives 'attribute' to all expressions inside the scope
+{{{
+<attribute> '{' <expression>... '}'
+}}}
+
+Several consecutive attributes are taken as one attribute for purposes of
+the grammar used in the above description; for example,
+
+{{{
+// Global thread properties
+pure safe property
+{
+  int g_thread_priority();
+  int g_thread_state();
+  string g_thread_name;
+}
+}}}
+
+The goal is to enable user-defined attributes so that we can do things like:
+
+{{{
+profiled f()
+{
+  do_stuff();
+}
+
+// Translates into:
+
+f()
+{
+  start_profiled_block("f()");
+  scope(exit)
+    end_profiled_block("f()");
+
+  do_stuff();
+}
+}}}
+
+ * logged
+

@@ -1,0 +1,45 @@
+TODO metafunctions need serious thinking
+
+Metafunctions or compile-time functions are executed during compile time
+and therefore have some privileges that normal functions do not have, such
+as being able to generate code.
+
+Generic types can be implemented using metafunctions. In theory, Array<T> is
+a type returned by a metafunction Array<type T> that returns a type - so why
+not in practice?
+
+Metafunctions must be pure, because Array<int> must mean the same thing in
+different contexts.
+
+There are basically two types of metafunctions.
+
+- The simpler ones are used to generate expressions (often used for typesafe
+  variadic functions - see variadic_functions.txt)
+- The more complicated ones can create and modify compile-time structures.
+
+TODO figure out if different syntax is needed for the two
+
+Attribute 'meta' marks a function a metafunction.
+The expression 'generate <expression>' is used to generate code.
+
+For example:
+
+meta make_array(tuple ts)
+{
+  generate Array<T> result;
+
+  for_each (t in ts)
+  {
+    generate result.append(t);
+  }
+
+  generate result;
+}
+
+// Does not quite work; figure out how to return real values from metafunctions
+// (or at least pretend that it works by generating code that yields a real
+// value)
+
+TODO Define precisely where 'generate' can be used
+TODO Work out the details of code generation... it resembles inline functions
+     rather much with all that identifier generation and stuff

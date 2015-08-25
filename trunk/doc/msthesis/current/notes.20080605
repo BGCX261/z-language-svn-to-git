@@ -1,0 +1,367 @@
+Candidates for metaprogramming examples:
+
+Simple handling of symbols. Something such as the following would be 
+immensely useful:
+
+struct A
+{
+	f()
+	{
+		println("A.f");
+	}
+
+	g()
+	{
+		println("A.g");
+	}
+}
+
+struct B
+{
+	f()
+	{
+		println("B.f");
+	}
+}
+
+main()
+{
+	for <Symbol s in [A, B]>
+	{
+		Symbol sym = gensym();
+		generate("$s $sym = new $s;");
+		// Assume f exists
+		generate("$sym.f();");
+		generate(
+			"if <typeof($s).has_method(\"g\")> "
+			"{"
+			"  $sym.g();"
+			"}");
+	}
+
+	// This generates:
+	A _sym1;
+	_sym1.f();
+	if <typeof(A).has_method("g")>
+	{
+		_sym1.g();
+	}
+
+	B _sym2;
+	_sym2.f();
+	if <typeof(B).has_method("g")>
+	{
+		_sym2.g();
+	}
+
+	// Which in turn generates:
+	A _sym1;
+	_sym1.f();
+	_sym1.g();
+	B _sym2;
+	_sym2.f();
+}
+
+
+
+I'd also like to see things like
+
+[ship, player, world].update();
+
+possible - perhaps through:
+
+for <Symbol s in [ship, player, world]>
+	s.update();
+
+Or maybe [ship, player, world].each<update($_)> (or something)
+
+Need quoting & unquoting...
+
+Actually, it would _need_ to be 'ship, 'player, 'world or similar.
+
+Maybe just use strings?
+
+["ship", "player", "world"].each<x -> $x.update()>;
+
+The 'metaness' of an expression is derived from bottom-up - if 
+a subexpression of an expression is meta, then the whole expression
+must be. And vice versa? Well, actually, the participants here are:
+
+_each<x -> $x.update(), ["ship", "player", "world"]>
+
+And here the rule would be "Since the function application is meta, 
+then the arguments must be as well, and therefore the function 
+literal is colored as meta, and the array construction too."
+
+We need rules for these colorings. Also how constants propagate.
+
+["ship", "player", "world"].reverse() should be meta, because it does 
+not rely on run-time information. But also because it can.
+
+In the program tree, there are forces that want to color code as 
+compiletime, and forces that want to color code as runtime.
+
+So, in fact, is it actually even necessary to distinguish between 
+if <> and if ()? The answer is yes because of scopes:
+
+if (true)
+{
+	A a;
+}
+
+if <true>
+{
+	A a;
+}
+
+results in
+
+A a
+
+Or does it? What happens if...
+
+if (true)
+{
+	println("Hello!");
+}
+
+vs.
+
+if <true>
+{
+	println("Hello!");
+}
+
+Should the latter code be executed inside the compiler, or just included in the
+code? How should the user indicate that "now I'd like to invoke some metacode
+please"?
+
+Perhaps
+${
+	if (true)
+	{
+		generate("println(\"Hello!\");");
+	}
+}
+
+or
+
+${
+	if (true)
+	{
+		println("Hello!");
+	}
+}
+
+Rather crude, is it?
+
+Perhaps +{} and -{} as in metalua are in order:
+
++{
+	if (true)
+	{
+		-{ println("Hello!"); }
+	}
+}
+
+Reminds me of php:
+
+<?php
+
+if (something)
+?>
+	<p>Some html code</p>
+<?php
+...
+?>
+
+Only in a somewhat different twist :)
+
+Interesting...
+
+
+
+About syntax
+============
+
+Lisp is well off with its quote-unquote-quasiquote thing, which fits 
+perfectly. But the imperative language crowd just wants to "push heavy
+blocks into place". Quote Perlis:
+
+Pascal is for building pyramids -- imposing, breathtaking, static structures
+built by armies pushing heavy blocks into place. Lisp is for building organisms
+-- imposing, breathtaking, dynamic structures built by squads fitting
+fluctuating myriads of simpler organisms into place. The organizing principles
+used are the same in both cases, except for one extraordinarily important
+difference: The discretionary exportable functionality entrusted to the
+individual Lisp programmer is more than an order of magnitude greater than that
+to be found within Pascal enterprises.
+
+http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-5.html#%_chap_Temp_2
+
+Hence strings...
+
+Or not?
+
+
+
+Blabbering continues
+====================
+
+Maybe it could be so that the language would automatically put in +{} 
+and -{} when it sees fit, for example:
+
+["a", "b"].each(Symbol x -> $x.update());
+
+results into (after compiler finds out use of Symbol and the $ expression 
+that this must be meta)
+
++{ ["a", "b"].each(Symbol x -> -{ $x.update() }) }
+
+Translates:
+
+{+
+	function f = function void (Symbol x) { -{ $x.update(); };
+	f("a");
+	f("b");
+}
+
+and furthermore into:
+
+{+
+	-{ $"a".update(); }
+	-{ $"b".update(); }
+-}
+
+After which it becomes
+
+	$"a".update();
+	$"b".update();
+
+And further to
+
+	a.update();
+	b.update();
+
+How does the compiler know that it is precisely the $x.update() that 
+must be enclosed in -{}? After all, $x.update() might be a call to a 
+metafunction and could be resolved in compile time.
+
+
+
+
+
+Normally, to generate code, you just type it:
+
+	a();
+
+However, if this must be done programmatically, invoke a block:
+
+	+{ generate("a();"); }
+
+Maybe the syntax could also be:
+
+	meta
+	{
+		generate("a();");
+	}
+
+Meta blocks (or expressions?) should yield the results of its computation:
+
+int x = meta { 1 + 1 }
+
+Do we run into the old statement vs expression thing again? What's wrong with
+
+print(if (x) 1 else 2} ?
+
+Oh yeah, this is wrong:
+
+	if (x)
+		1
+	else
+		2
+
+	// Where is the parser now?
+	int x; // Here comes error "Expecting ';'"
+
+	Or even more difficult:
+
+	if (x)
+		1
+	else
+		2
+	++i;
+	  ^ reads up to here, considers ++ part of "2++", and dies
+
+Is this problem self-contained? Can we still have it so that statements
+(such as block statements, for()'s, while(), etc.) yield values?
+
+int x = meta
+{
+	int result = 0;
+	for (int i = 0; i < 10; ++i)
+		result += i;
+	result; // Yields the last expression of the block
+}
+
+(As a side note: We could also have a 'yield' keyword that 'returns' from the
+middle of the block, just like 'return'.)
+
+metacomputation can result in values, but it is more interesting to yield 
+some code instead, which is then substituted into the calling point:
+
+meta
+{
+	generate("printf(\"Hello world!\n\");");
+}
+
+Shortcut for generate, to avoid escaping nastiness, could be:
+
+meta
+{
+	${ printf("Hello world!\n"); }
+}
+
+Or it could be formulated as
+
+meta
+{
+	generate
+	{
+		printf("Hello world!\n");
+	}
+}
+
+or even
+
+meta
+{
+	generate printf("Hello world!\n");
+}
+
+How to access meta variables from within generate? Introduce unquote:
+
+meta
+{
+	string name = "Mike";
+
+	generate printf("Hello " + $name + "\n");
+}
+
+In fact, you can use ${} to unquote more than just names:
+
+meta
+{
+	string name = "Mike";
+	// Now the computation takes place during compile time
+	generate printf(${ "Hello " + $name + "\n" });
+}
+
+
+Problems
+========
+
+How to move data from compile time to runtime?
+
+Arithmethic types ok, but... Strings and other dynamically allocated objects?
+

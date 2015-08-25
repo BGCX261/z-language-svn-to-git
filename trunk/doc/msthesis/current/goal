@@ -1,0 +1,7 @@
+
+The goal is to construct a minimal, simple and clean subset of C and
+then introduce a compile-time metaprogramming facility. The objective is
+to preserve as much as possible of the spirit of C. In particular, the
+syntax of the language is changed only if not doing so would needlessly
+complicate the implementation.
+

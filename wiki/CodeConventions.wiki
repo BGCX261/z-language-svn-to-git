@@ -1,0 +1,22 @@
+#summary Code Conventions for Z
+#labels Phase-Design
+
+_under construction_
+
+=== Why underscores instead of CamelCase ===
+
+  * It's easier to spot common mistakes like FileName vs. getFilename or Hashtable vs. HashTable
+
+=== A summarizing example ===
+
+{{{
+Return_Type function_name()
+{
+  Type_Name variable_name;
+}
+}}}
+
+Probably good resources:
+  * http://www.joelonsoftware.com/articles/Wrong.html
+  * http://java.sun.com/docs/codeconv/html/CodeConvTOC.doc.html
+  * http://www.possibility.com/Cpp/CppCodingStandard.html

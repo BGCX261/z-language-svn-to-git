@@ -1,0 +1,161 @@
+How to deal with common metatypes
+===================================
+
+By common metatypes I mean those types that are, in practice, treated as
+first-class citizens (or at least they try to...). That is, functions
+and types.
+
+This is a compile-time expression in C:
+
+struct { int x; } 
+
+And this is equivalent to (in C) 
+
+struct A { int x; }; 
+
+to
+
+typedef struct { int x; } A;
+
+which is equivalent (in Z) to
+
+Type A = struct { int x; }; (IF struct expressions are permitted, that
+is)
+
+And this would be an expression better suited to meta realm. But its
+result is used in the actual code without any quoting at all! How can
+this be possible?
+
+f() {
+	A thing; // Uses A!
+}
+
+In fact, the function definition actually translates to...
+
+const (void => void) f = function void(void) { A thing; }
+(need to figure out a good function literal syntax)
+
+Well, actually in *that* sense, f is in theory a runtime value, it's
+just constant and therefore call to it can be optimized at compile time.
+
+But is there any difference between a compile-time value (a type) and a
+constant?
+
+const int a = 1; // A compile-time value?
+const int b = fib(10); // A compile-time value? fib(10) executed in
+compile time because the declaration is const? Can we do this?
+
+// In a sense, declared types are just const values and therefore the
+// struct expression is run at compile time... right?
+
+const Type A = struct { int x; };
+
+// But we don't need to declare const since ALL struct declarations are
+// const (it would not make any sense not to)
+
+Type A = struct { int x; }; // expression evaluated in compile time
+
+// And this is just a shorthand for that
+
+struct A { int x; }
+
+// And THIS...
+
+struct A<Type T> { T x; }
+
+// is a shorthand for
+
+Type A(Type T)
+{
+	return struct { T x; };
+}
+
+// Although, what happens when the user calls it?
+
+f()
+{
+	A<int> foo;
+
+	// which probably should translate to:
+	A(int) foo;
+
+	// and the compiler must execute it at compile time
+}
+
+And we also have the problem of automatic type inference (C++ template
+methods), but let's ignore that for a second.
+
+By the way, I believe it is possible to have both struct forms in
+grammar:
+
+expression
+	: STRUCT '{' '}'
+	| ...
+	;
+
+statement
+	: STRUCT identifier '{' '}'
+	| ...
+	;
+
+Just need to differentiate between the two by looking ahead for the
+identifier symbol... Standard parser generators might not like it,
+however.
+
+So, _what_ actually happens when a type expression is encountered in,
+say, variable declaration:
+
+declaration :
+	expression identifier ';' ;
+
+First, evaluate 'expression' (in compile-time, obviously). The names
+inside 'expression' refer to the compile-time names in the current
+context. 
+
+In imperative (function) scope this means the compile-time
+(const) values that have been defined outside the function,
+the compile-time (const) values that have been defined before 
+the current declaration (XXX - how about when we are interpreting a
+function? Are these just the consts, or all values? [1])
+
+[1]:
+
+// a compile-time function - should it be declared somehow?
+Type foo()
+{
+	return int;
+}
+
+f()
+{
+	foo() variable; // foo() runs at compile time
+}
+
+In declarative (global or object) scope this means the compile-time
+(const) values declared in the current scope and outside it.
+
+Compile-time evaluation is not unlike what we must do anyway to do
+constant propagation properly:
+
+struct X
+{
+	int[z] f();
+
+	const int x = y;
+	const int y = 5;
+	const int z = x;
+}
+
+So... should 'const' be a type specifier (if there is such a thing) or
+should it mark the whole declaration?
+
+declaration :
+	CONST(opt) expression identifier ';' ;
+
+Probably the whole declaration, since for this meaning of const, it
+would probably not make much sense to have a ptr to const, or array of
+const, or whatever.
+
+Work on this. Now, sleep.
+
+

@@ -1,0 +1,21 @@
+Classes in basically C structs with constructors, destructors and members.
+
+class Some_Class
+{
+  type Ptr_To_X = ptr<X>;
+
+  ctor()
+  {
+    if (moon_phase() == moon_phase_full)
+      m_x = 5;
+  }
+
+  dtor()
+  {
+    printf("Died");
+  }
+
+  int m_x = 0;
+}
+
+- public / private

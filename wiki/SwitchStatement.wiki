@@ -1,0 +1,43 @@
+#summary Switch statement
+#labels Phase-Design
+
+= Switch statement =
+
+Main differences from the classic switch statement of C derived languages:
+ * Any type can be used in the switch expression
+ * `break` is implicit
+ * expressions can be grouped with `,`
+ * expressions can be enumerated with `..`
+
+{{{
+  switch (rnd.next(100))
+  {
+    case 0..9:
+      do_sometimes();
+    case 10:
+      do_rarely();
+    case 11, 12:
+      do_not_quite_as_rarely();
+    default:
+      do_usually();
+  }
+}}}
+
+Fall-through is accomplished with the keyword `fall_through`:
+
+{{{
+  // *TODO* replace with a less contorted example
+  switch (input.get_line())
+  {
+    case "quit":
+      return;
+    default:
+      print("error in input");
+      fall_through;
+    case "help":
+      print_help();
+  }
+}}}
+
+*TODO* figure out how to enumerate arbitrary types
+

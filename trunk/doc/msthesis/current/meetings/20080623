@@ -1,0 +1,154 @@
+Second meeting with professor Jorma Tarhio.
+
+Summary: Talk about code generation, universal languages, etcetera. C is
+a bit messy, which I noticed flipping through the LCC book the previous
+night. Better to take a clean(ish) subset of C - leave out implicit
+conversions, bitfields, perhaps order dependencies.
+
+Conclusion: A new language will be probably more work and will be of
+less general interest than a metaprogramming extension to, say, C. But
+on the other hand, C might be a little awkward as a metaprogramming
+language. Need to weigh the pros and cons of these alternatives. Perhaps
+try to implement one in C and we'll see.
+
+Also suggested just creating a "better C" and leaving out
+metaprogramming (for now) - but that wouldn't be proper for a master's
+thesis.
+
+Notes:
+
+-existing small languages? -> research
+-new language should contain something new
+-a limited C
+-automatic compile-time evaluation of code? (partial evaluation?)
+ search w/ regards to C
+-heinakuun lomalla, elokuussa taas
+-kielten valinen konversio
+-motivating, concrete examples!
+
+I had written up a summary of suggestions I was able to conjure up, along the
+lines of:
+
+Problem statement:
+
+Miten tulee suunnitella käännösaikaiset metaohjelmointiominaisuudet,
+jotta ne sulautuvat saumattomasti yhteen C:n (tai vastaavan matalan
+tason ohjelmointikielen) kanssa? Kuinka paljon C:tä tulee
+laajentaa/muuttaa hyvän metaohjelmointijärjestelmän toteuttamiseksi?
+
+
+Background:
+
+Tim Sheard's metaprogramming taxonomy
+
+
+
+Analysis of metaprogramming facilities
+
+Käännösaikaisissa metaohjelmointilaajennuksissa on yksi tai useampia
+seuraavista mekanismeista:
+
+    * Ohjelmakoodin suorittaminen käännösaikana joko siten että se näyttää funktiokutsulta (makrot) tai eksplisiittisesti
+    * Mekanismi koodin generoimiseksi
+    * Mekanismi koodin analysoimiseksi
+    * Mekanismi metakoodin muuttujien siirtämiseen AST-puun sisälle ("unquote / splice")
+
+// Suorita code(); käännösaikana
+
+meta {
+
+  // täällä voi olla tavallista C-koodia joka ajetaan käännösaikana
+
+  code();
+
+}
+
+ 
+
+// meta {} - blokin sisällä voi generoida koodia näin:
+
+meta {
+
+  generate {
+
+    code(); // sijoitetaan meta-blokin paikalle
+
+  }
+
+}
+
+=>
+
+code();
+
+// Käytännön esimerkki:
+
+const bool debug = true;
+
+int f()
+{
+    meta
+    {
+        if (debug)
+        {
+            generate
+            {
+                printf("f() entered\n");
+            }
+        }
+    }
+   
+    // ...
+}
+
+// Koodin suorittaminen käännösaikana ja käännösaikaisen arvon siirtäminen varsinaiseen koodiin:
+
+int fib(int n) { ... }
+
+int f()
+
+{
+
+  meta
+
+  {
+
+    int fib10 = fib(10);
+
+    generate
+
+    {
+
+      printf("fib(10) = %d\n", $(fib10));
+
+    }
+
+  }
+
+}
+
+=>
+
+int f()
+
+{
+
+  printf("fib(10) = %d\n", 89);
+
+}
+
+// Makrot (tämän toteutus hieman auki)
+
+macro meta_printf(String s, Object args...)
+{
+        if (meta_is_constant(s))
+        {
+
+                // Tarkistaa käännösaikana että argumenttien tyypit vastaavat formaattia                check_args(s, args);
+               generate actual_printf($s, $args);
+        }
+        else
+        {
+                error("Unsafe printf call\n");
+        }
+}

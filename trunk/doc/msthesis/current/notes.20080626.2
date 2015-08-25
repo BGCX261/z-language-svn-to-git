@@ -1,0 +1,71 @@
+Transfer of local variables to meta realm
+=========================================
+
+f()
+{
+	int x;
+	meta
+	{
+		assert(typeof(x) == Variable); // Right?
+	}
+}
+
+struct Location
+{
+	String file;
+	int line;
+	int column;
+}
+
+struct Variable
+{
+	String name;
+	Location loc;
+	bool is_global;
+}
+
+macro mac(b)
+{
+	printf($(b.to_string()) + ": " + $b);
+}
+
+f()
+{
+	int x = 5;
+	mac(x);
+}
+
+This would probably translate to something like:
+
+void mac(Expression b)
+{
+	generate printf($(b.to_string()) + ": " + $b);
+}
+
+f()
+{
+	int x = 5;
+	meta
+	{
+		// X is a variable... but! Variable is-an expression, right?
+		mac(x);
+	}
+
+	=>
+
+	meta generate printf("x" + ": " + x);
+
+	=>
+
+	printf("x" + ": " + x);
+
+	// How about?
+
+	mac(1+1);
+
+	// Should macros always take expressions as arguments?
+}
+
+This leaves food for thought. Next up: what are expressions and how to
+we play with them?
+

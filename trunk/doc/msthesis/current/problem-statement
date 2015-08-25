@@ -1,0 +1,102 @@
+
+Problem statement in short:
+
+Adding metaprogramming facilities to C
+
+In practice, the route that I want to take is to take a small, clean
+subset of C and add metaprogramming facilities to it.
+
+TODO Prove this is the right way! What parts of C do I consider
+hindrances for metaprogramming? Or is it just a feeling? Not Invented
+Here? There are plenty of things that can be improved in C but not
+necessarily all of them are required for a proper metaprogramming
+support.
+
+Why a subset instead of taking an existing C compiler (such as lcc) and
+starting from there?
+
+Because the effort to understand and extend an existing C compiler may
+prove to be too big. After all, existing compilers are not written
+with metaprogramming in mind.
+
+TODO How can I claim this? Must study lcc (at least) and extensions
+written for it first.
+
+Actually, extending LCC might quite well be an option.
+
+
+
+How, then, should the metaprogramming facility be designed?
+
+We can start with examples that are generally considered useful
+applications for metaprogramming.
+
+1. Safe printf:
+
+printf("%s is %d", name, value);
+
+-> assert_values_match("%s is %d", typeof(name), typeof(value));
+
+2. Serialization:
+
+Given a type, write a function that can convert the type to and from a
+sequence of bytes. (Or to xml, or to whatever)
+
+struct Person
+{
+	String name;
+	Address address;
+	int age;
+}
+
+Serializable<Person>
+
+->
+
+struct Person
+{
+	String name;
+	Address address;
+	int age;
+
+	void load(InputStream* input)
+	{
+		// generated code
+	}
+
+	void save(OutputStream* output)
+	{
+		// generated code
+	}
+}
+
+3. Generics 
+
+Wonder if these can be called a proper application of metaprogramming...
+
+Maybe throw in some policy stuff from Modern C++ Design?
+
+Type Counted<Type T>
+{
+	struct Intrinsic_Reference_Counted<T>
+	{
+		// call T.inc_ref and T.dec_ref 
+	}
+
+	struct Extrinsic_Reference_Counted<T>
+	{
+		// do it with some other mechanism
+	}
+
+	if (T.has_member("inc_ref") && 
+		T.has_member("dec_ref"))
+	{
+		return Intrinsic_Reference_Counted<T>;
+	}
+	else
+	{
+		return Extrinsic_Reference_Counted<T>;
+	}
+}
+
+

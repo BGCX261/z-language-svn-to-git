@@ -1,0 +1,158 @@
+Things I wrote up during my midsummer trip.
+
+f() {
+	meta {
+		something();
+	}
+
+	meta {
+		generate {
+			something(); // -> lookup?
+		}
+	}
+}
+
+<grammar>
+
+statement
+	: ...
+	| META statement
+	| GENERATE statement
+	;
+
+</grammar>
+
+Semantics of meta statement
+
+-interpret statement (function/other definitions live in compile-time
+scope)
+-for each "generate" statement therein
+  insert contents of statement into "calling" code
+
+SCOPES SCOPES
+
+module foo;
+use math.sin;
+
+meta f() {
+	generate sin(1); // -> math.sin
+}
+
+module bar;
+
+g() {
+	meta {
+		foo.f();
+	}
+}
+
+->
+
+g() {
+	math.sin(1);
+}
+
+Therefore:
+Compilation:
+	1. parse
+	2. rewrite names
+	3. reduce metacode
+	4. generate assembly
+
+How to refer to local variables?
+
+f() {
+	int x;
+	meta generate x;
+}
+
+ok - but?
+
+meta {
+	int x; // 1
+	generate $x; // refers to x at 1; $ = "value of"
+}
+
+<grammar>
+
+expression
+	: ...
+	| '$' expression
+	;
+
+</grammar>
+
+Semantics of $ expression:
+
+If inside generate statement (otherwise error) evaluate in that scope
+and translate that value into compiled code.
+
+Translating data from interpreter realm into code realm:
+
+$1 -> 1
+$"x" -> "x"
+$some_array after, say, this:
+  array<int> some_array;
+  some_array.reserve(10);
+  some_array.push_back(5) 
+
+-> ?
+
+Should we just skip the cases that require dynamic memory allocation?
+Yes. Out of the scope of this study. However, Strings and arrays are
+kind must. [To say it more clearly - the datatypes must be serialized,
+and the serialization format is the syntax of the literal expressions in
+the language. Therefore, the literal expressions must be able to
+represent a rich array of datatypes.]
+
+HOW ABOUT
+
+f() {
+	int x;
+	meta {
+		x; // what is the type of x?
+		++x; // does not make sense; but
+		generate ++$x; // this certainly does!
+	}
+	=> ++x;
+}
+
+The interpreted code sees x from the same viewpoint as the compiler: it
+can inspect its name, initializer, etc... but not its value. In fact,
+the following might make sense:
+
+f() {
+	int x = 5;
+	meta {
+		Variable v1 = x; // of type variable!
+		Variable v2 = v1;
+		String s = v1.name;
+		Type t = v1.type;
+		bool b = v1.is_constant;
+	}
+}
+
+To evaluate a variable?
+
+meta {
+	Variable v = (something);
+
+	generate $x;
+} -> v's name, or reference to it, or ...
+
+This enables:
+
+// (Assuming printf has just one argument...
+printf(Variable v, Variable arg) {
+	assert(v.is_constant);
+	assert(v.type == String);
+	String val = v.value;
+	check(val, arg);
+	generate actual_printf($val, $arg);
+}
+
+meta {
+	printf("%d", 1);
+}
+
+
